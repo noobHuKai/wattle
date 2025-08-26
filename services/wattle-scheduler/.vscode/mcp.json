@@ -1,0 +1,46 @@
+{
+	"servers": {
+		"context7": {
+			"command": "npx",
+			"args": [
+				"-y",
+				"@upstash/context7-mcp@latest"
+			],
+			"type": "stdio"
+		},
+		// 	"@reapi/mcp-openapi": {
+		// 		"command": "npx",
+		// 		"args": [
+		// 			"-y",
+		// 			"@reapi/mcp-openapi@latest",
+		// 			"--dir",
+		// 			"./specs"
+		// 		],
+		// 		"env": {}
+		// 	},
+		// 	"mcp-mermaid": {
+		// 		"command": "npx",
+		// 		"args": [
+		// 			"-y",
+		// 			"mcp-mermaid"
+		// 		]
+		// 	}
+		"code-analysis": {
+			"command": "uv",
+			"args": [
+				"--directory",
+				"/home/hukai/GitTests/mcp/code-analysis-mcp",
+				"run",
+				"code_analysis.py"
+			]
+		},
+		"mermaid": {
+			"command": "npx",
+			"args": [
+				"-y",
+				"@peng-shawn/mermaid-mcp-server"
+			]
+		}
+	},
+	"inputs": []
+}

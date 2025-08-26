@@ -1,0 +1,16 @@
+[package]
+name = "scheduler"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+storage = { path = "../storage" }
+runtime = { path = "../runtime" }
+core = { path = "../core" }
+eyre = { workspace = true }
+tracing = { workspace = true }
+tokio = { workspace = true }
+serde = { workspace = true }
+zenoh = { workspace = true }
+which = "8.0.0"
+rand = "*"

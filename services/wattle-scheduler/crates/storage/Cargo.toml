@@ -1,0 +1,12 @@
+[package]
+name = "storage"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+sqlx  = {version = "*", features = [ "runtime-tokio","sqlite" ] }
+eyre ={ workspace = true}
+chrono = { workspace = true}
+serde = { workspace = true}
+core ={ path = "../core"}
+serde_json = { workspace = true}

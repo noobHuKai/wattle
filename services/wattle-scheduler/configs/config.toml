@@ -1,0 +1,9 @@
+[server]
+host = "localhost"
+port = 9240
+
+
+[scheduler]
+# Sequential, Parallel, DependencyBased
+mode = "Sequential"
+db_url = "configs/wattle.db"

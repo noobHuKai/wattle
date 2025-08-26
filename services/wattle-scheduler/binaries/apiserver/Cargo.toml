@@ -1,0 +1,31 @@
+[package]
+name = "apiserver"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+# CLI and configuration
+clap = { version = "4.5.41", features = ["derive"] }
+serde = { version = "1.0.219", features = ["derive"] }
+serde_json.workspace = true
+dotenv = "0.15.0"
+toml = "*"
+
+# Logging and tracing
+tracing = "0.1.41"
+tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
+tracing-error = "0.2.1"
+
+# Async runtime
+tokio.workspace = true
+axum = { version = "0.8.4" }
+tower-http = { version = "0.6.6", features = ["trace", "timeout", "cors"] }
+
+
+color-eyre = {version = "*"}
+eyre.workspace = true
+
+scheduler = {path = "../../crates/scheduler"}
+
+prometheus = "*"
+sysinfo = "*"
