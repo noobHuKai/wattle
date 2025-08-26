@@ -2,8 +2,7 @@ use rerun::{demo_util::grid, external::glam};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 保存到文件而不是启动服务器
-    let rec = rerun::RecordingStreamBuilder::new("rerun_example_minimal")
-        .save("cube_visualization.rrd")?;
+    let rec = rerun::RecordingStreamBuilder::new("rerun_example_minimal").connect_grpc()?;
 
     let points = grid(glam::Vec3::splat(-10.0), glam::Vec3::splat(10.0), 10);
     let colors = grid(glam::Vec3::ZERO, glam::Vec3::splat(255.0), 10)
