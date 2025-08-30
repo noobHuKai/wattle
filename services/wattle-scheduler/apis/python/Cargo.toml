@@ -1,0 +1,25 @@
+[package]
+name = "wattle-py"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "wattle_py"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.21", features = ["extension-module"] }
+pyo3-asyncio = { version = "0.21", features = ["tokio-runtime"] }
+tokio = { version = "1", features = ["full"] }
+eyre = "0.6"
+serde_json = "1.0"
+uuid = { version = "1.0", features = ["v4"] }
+zenoh = "1.5"
+arrow-array = "40.0"
+arrow-schema = "40.0"
+arrow-json = "40.0"
+futures = "0.3"
+
+[dependencies.pyo3-asyncio-macros]
+version = "0.21"
+optional = true
