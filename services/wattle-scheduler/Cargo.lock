@@ -144,6 +144,7 @@ dependencies = [
  "prometheus",
  "serde",
  "serde_json",
+ "storage",
  "sysinfo",
  "tempfile",
  "tokio",

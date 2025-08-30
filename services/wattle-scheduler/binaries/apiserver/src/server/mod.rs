@@ -3,6 +3,7 @@ use tokio::signal;
 
 mod apis;
 mod metrics;
+mod models;
 mod response;
 mod state;
 

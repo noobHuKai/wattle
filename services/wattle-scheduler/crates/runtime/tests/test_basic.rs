@@ -1,8 +1,8 @@
 use std::{collections::HashMap, time::Duration};
 use runtime::TaskExecutor;
 
-// Use full path to avoid core crate naming conflict  
-use wattle_scheduler_core::{ExecutionConfig, Worker};
+// Use explicit path to avoid std::core conflict
+use ::core::{ExecutionConfig, Worker};
 
 #[tokio::test]
 async fn test_executor_creation() {
@@ -27,6 +27,8 @@ async fn test_worker_structure() {
         args: Some(vec!["hello".to_string()]),
         working_dir: None,
         env_vars: None,
+        inputs: None,
+        outputs: None,
     };
     
     assert_eq!(worker.name, "test-worker");
@@ -49,6 +51,8 @@ async fn test_basic_execution() {
         args: None,
         working_dir: None,
         env_vars: None,
+        inputs: None,
+        outputs: None,
     };
     
     // Simple callbacks

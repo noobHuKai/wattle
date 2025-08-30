@@ -1,3 +1,5 @@
+use core::DatabaseConfig;
+use sqlx::sqlite::SqlitePoolOptions;
 use std::path::PathBuf;
 
 pub mod model;
@@ -7,7 +9,10 @@ pub use model::{WorkerEntity, WorkflowEntity, WorkerLogEntity};
 pub use repositories::Repositories;
 pub type DB = sqlx::SqlitePool;
 
-pub async fn init_database(database_url: Option<String>) -> eyre::Result<DB> {
+pub async fn init_database(
+    database_url: Option<String>,
+    db_config: Option<DatabaseConfig>,
+) -> eyre::Result<DB> {
     let db_url = match database_url {
         Some(url) => {
             let db_path = PathBuf::from(&url);
@@ -21,7 +26,15 @@ pub async fn init_database(database_url: Option<String>) -> eyre::Result<DB> {
         }
         None => "sqlite::memory:".to_string(),
     };
-    let pool = sqlx::SqlitePool::connect(&db_url).await?;
+
+    let mut pool_options = SqlitePoolOptions::new();
+    if let Some(config) = db_config {
+        if let Some(max_conn) = config.max_connections {
+            pool_options = pool_options.max_connections(max_conn);
+        }
+    }
+
+    let pool = pool_options.connect(&db_url).await?;
 
     sqlx::migrate!("./migrations").run(&pool).await?;
     Ok(pool)

@@ -7,3 +7,7 @@ port = 9240
 # Sequential, Parallel, DependencyBased
 mode = "Sequential"
 db_url = "configs/wattle.db"
+
+[coordinator.database]
+max_connections = 50
+

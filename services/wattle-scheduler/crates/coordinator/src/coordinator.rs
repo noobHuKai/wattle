@@ -18,8 +18,9 @@ pub struct Coordinator {
 
 impl Coordinator {
     pub async fn new(cfg: CoordinatorConfig) -> Result<Self> {
-        let db_url = cfg.db_url.unwrap_or_else(|| "sqlite://wattle.db".to_string());
-        let repo = Arc::new(Repositories::new(db_url).await?);
+        let db_url = cfg.db_url.clone();
+        let db_config = cfg.database.clone();
+        let repo = Arc::new(Repositories::new(db_url, db_config).await?);
         let executor = TaskExecutor::new(cfg.execution.unwrap_or_default());
 
         let session = zenoh::open(zenoh::Config::default())
@@ -109,46 +110,52 @@ impl Coordinator {
     async fn run_workers(&self, worker: Worker) -> Result<()> {
         let workflow_name = worker.workflow_name.clone();
         let worker_name = worker.name.clone();
-        let workflow_name_clone = workflow_name.clone();
-        let worker_name_clone = worker_name.clone();
-        let repo1 = self.repo.clone();
-        let repo2 = self.repo.clone();
-        let repo3 = self.repo.clone();
         
-        let workflow_name2 = workflow_name.clone();
-        let worker_name2 = worker_name.clone();
-        let workflow_name3 = workflow_name.clone();
-        let worker_name3 = worker_name.clone();
+        // 使用引用计数减少克隆
+        let repo = self.repo.clone();
         
         self.executor
             .execute(
                 worker,
-                async move {
-                    // 工作者创建时的逻辑
-                    if let Err(err) = repo1
-                        .update_worker_status(&workflow_name_clone, &worker_name_clone, WorkerStatus::Running)
-                        .await
-                    {
-                        tracing::error!("Failed to update worker status: {:?}", err);
-                    };
+                {
+                    let repo = repo.clone();
+                    let workflow_name = workflow_name.clone();
+                    let worker_name = worker_name.clone();
+                    async move {
+                        // 工作者创建时的逻辑
+                        if let Err(err) = repo
+                            .update_worker_status(&workflow_name, &worker_name, WorkerStatus::Running)
+                            .await
+                        {
+                            tracing::error!("Failed to update worker status: {:?}", err);
+                        };
+                    }
                 },
-                async move {
-                    // 工作者成功时的逻辑
-                    if let Err(err) = repo2
-                        .update_worker_status(&workflow_name2, &worker_name2, WorkerStatus::Completed)
-                        .await
-                    {
-                        tracing::error!("Failed to update worker status: {:?}", err);
-                    };
+                {
+                    let repo = repo.clone();
+                    let workflow_name = workflow_name.clone();
+                    let worker_name = worker_name.clone();
+                    async move {
+                        // 工作者成功时的逻辑
+                        if let Err(err) = repo
+                            .update_worker_status(&workflow_name, &worker_name, WorkerStatus::Completed)
+                            .await
+                        {
+                            tracing::error!("Failed to update worker status: {:?}", err);
+                        };
+                    }
                 },
-                async move {
-                    // 工作者失败时的逻辑
-                    if let Err(err) = repo3
-                        .update_worker_status(&workflow_name3, &worker_name3, WorkerStatus::Failed)
-                        .await
-                    {
-                        tracing::error!("Failed to update worker status: {:?}", err);
-                    };
+                {
+                    let repo = repo.clone();
+                    async move {
+                        // 工作者失败时的逻辑
+                        if let Err(err) = repo
+                            .update_worker_status(&workflow_name, &worker_name, WorkerStatus::Failed)
+                            .await
+                        {
+                            tracing::error!("Failed to update worker status: {:?}", err);
+                        };
+                    }
                 },
             )
             .await?;
@@ -176,6 +183,24 @@ impl Coordinator {
     }
     pub async fn list_workflows(&self) -> Result<Vec<WorkflowEntity>> {
         self.repo.get_all_workflows().await
+    }
+
+    /// 获取分页工作流列表
+    pub async fn list_workflows_paged(
+        &self,
+        page: u64,
+        page_size: u64,
+        status_filter: Option<String>,
+        sort_by: String,
+        order: String,
+    ) -> Result<(Vec<WorkflowEntity>, u64)> {
+        self.repo.get_workflows_paged(
+            page,
+            page_size,
+            status_filter.as_deref(),
+            &sort_by,
+            &order,
+        ).await
     }
 
     pub async fn get_workflow_info(&self, name: &str) -> Result<Option<WorkflowEntity>> {
@@ -225,10 +250,13 @@ impl Coordinator {
         let execution_levels = workflow.get_execution_order()
             .map_err(|e| eyre::eyre!("Failed to get execution order: {}", e))?;
         
-        // 创建 worker 名称到 worker 对象的映射
+        // 创建 worker 名称到 worker 对象的映射，避免在循环中克隆名称
         let worker_map: HashMap<String, Worker> = workflow.workers
             .into_iter()
-            .map(|w| (w.name.clone(), w))
+            .map(|w| {
+                let name = w.name.clone();
+                (name, w)
+            })
             .collect();
         
         // 按层级顺序执行，同一层级内并发执行
@@ -238,10 +266,11 @@ impl Coordinator {
             // 为当前层级的所有 worker 创建任务
             let mut level_tasks = Vec::new();
             
-            for worker_name in level_workers {
-                if let Some(worker) = worker_map.get(&worker_name) {
+            for worker_name in &level_workers {
+                if let Some(worker) = worker_map.get(worker_name) {
                     let coordinator = self.clone();
                     let worker = worker.clone();
+                    let worker_name = worker_name.clone(); // 只在需要时克隆
                     
                     let task = tokio::spawn(async move {
                         tracing::info!("Starting worker: {}", worker.name);

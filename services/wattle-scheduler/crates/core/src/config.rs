@@ -19,7 +19,13 @@ impl Default for ExecutionConfig {
 }
 
 #[derive(Debug, Clone, Deserialize, Default)]
+pub struct DatabaseConfig {
+    pub max_connections: Option<u32>,
+}
+
+#[derive(Debug, Clone, Deserialize, Default)]
 pub struct CoordinatorConfig {
     pub db_url: Option<String>,
     pub execution: Option<ExecutionConfig>,
+    pub database: Option<DatabaseConfig>,
 }

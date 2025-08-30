@@ -2,7 +2,7 @@ use crate::{
     DB,
     model::{WorkerEntity, WorkflowEntity, WorkerLogEntity},
 };
-use core::{Worker, Workflow, WorkerStatus};
+use core::{Worker, Workflow, WorkerStatus, DatabaseConfig};
 use eyre::Result;
 use sqlx::{Row, query, query_as};
 
@@ -11,8 +11,8 @@ pub struct Repositories {
 }
 
 impl Repositories {
-    pub async fn new(db_url: String) -> Result<Self> {
-        let db = crate::init_database(Some(db_url)).await?;
+    pub async fn new(db_url: Option<String>, db_config: Option<DatabaseConfig>) -> Result<Self> {
+        let db = crate::init_database(db_url, db_config).await?;
         Ok(Self { db })
     }
 
@@ -58,6 +58,65 @@ impl Repositories {
         .await?;
 
         Ok(rows)
+    }
+
+    /// 获取工作流列表（支持分页和过滤）
+    pub async fn get_workflows_paged(
+        &self,
+        page: u64,
+        page_size: u64,
+        status_filter: Option<&str>,
+        sort_by: &str,
+        order: &str,
+    ) -> Result<(Vec<WorkflowEntity>, u64)> {
+        let offset = (page - 1) * page_size;
+        
+        // 构建查询条件
+        let mut where_clause = "WHERE deleted_at IS NULL".to_string();
+        let mut count_params = Vec::new();
+        let mut query_params = Vec::new();
+        
+        if let Some(status) = status_filter {
+            where_clause.push_str(" AND status = ?");
+            count_params.push(status);
+            query_params.push(status);
+        }
+
+        // 获取总数
+        let count_query = format!("SELECT COUNT(*) as count FROM workflows {}", where_clause);
+        let mut count_query_builder = query(&count_query);
+        for param in &count_params {
+            count_query_builder = count_query_builder.bind(param);
+        }
+        
+        let total_row = count_query_builder.fetch_one(&self.db).await?;
+        let total: i64 = total_row.get("count");
+
+        // 构建排序子句
+        let order_clause = match sort_by {
+            "name" => format!("ORDER BY name {}", order),
+            "status" => format!("ORDER BY status {}", order),
+            "started_at" => format!("ORDER BY started_at {}", order),
+            "completed_at" => format!("ORDER BY completed_at {}", order),
+            _ => format!("ORDER BY created_at {}", order), // 默认按创建时间排序
+        };
+
+        // 获取分页数据
+        let data_query = format!(
+            "SELECT name, working_dir, status, created_at, deleted_at, started_at, completed_at 
+             FROM workflows {} {} LIMIT ? OFFSET ?",
+            where_clause, order_clause
+        );
+        
+        let mut data_query_builder = query_as(&data_query);
+        for param in &query_params {
+            data_query_builder = data_query_builder.bind(param);
+        }
+        data_query_builder = data_query_builder.bind(page_size as i64).bind(offset as i64);
+        
+        let rows: Vec<WorkflowEntity> = data_query_builder.fetch_all(&self.db).await?;
+
+        Ok((rows, total as u64))
     }
 
     /// 检查工作流是否存在

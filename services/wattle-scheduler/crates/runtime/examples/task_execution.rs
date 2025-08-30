@@ -30,6 +30,8 @@ async fn main() -> eyre::Result<()> {
         args: None,
         working_dir: Some(temp_dir.path().to_string_lossy().to_string()),
         env_vars: None,
+        inputs: None,
+        outputs: None,
     };
 
     let result = executor.execute(
@@ -66,6 +68,8 @@ async fn main() -> eyre::Result<()> {
         args: None,
         working_dir: Some(temp_dir.path().to_string_lossy().to_string()),
         env_vars: Some(env_vars),
+        inputs: None,
+        outputs: None,
     };
 
     let result = executor.execute(
@@ -107,6 +111,8 @@ async fn main() -> eyre::Result<()> {
             args: None,
             working_dir: Some(temp_dir.path().to_string_lossy().to_string()),
             env_vars: None,
+            inputs: None,
+            outputs: None,
         };
 
         let result = executor.execute(

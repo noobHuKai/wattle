@@ -32,6 +32,8 @@ fn test_worker_basic_operations() {
         args: Some(vec!["world".to_string()]),
         working_dir: Some("/tmp".to_string()),
         env_vars: Some(HashMap::new()),
+        inputs: None,
+        outputs: None,
     };
     
     assert_eq!(worker.name, "test-worker");
@@ -57,6 +59,8 @@ fn test_simple_command_execution() {
             args: Some(vec!["test".to_string()]),
             working_dir: None,
             env_vars: None,
+            inputs: None,
+            outputs: None,
         };
         
         // Simple async functions that return () implementing Future<Output = ()>
@@ -105,6 +109,8 @@ fn test_executor_configuration() {
             args: None,
             working_dir: None,
             env_vars: None,
+            inputs: None,
+            outputs: None,
         };
 
         async fn empty_callback_create(_: u32, _: String, _: String) {}

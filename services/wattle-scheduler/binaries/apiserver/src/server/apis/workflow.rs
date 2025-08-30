@@ -2,12 +2,13 @@ use std::path::PathBuf;
 
 use crate::server::{
     AppState,
+    models::{ListQuery, PagedResponse, PaginationMeta, WorkflowResponse},
     response::{ApiJsonResult, IntoApiJsonResult},
 };
 
 use axum::{
     Json, Router,
-    extract::{Path, State},
+    extract::{Path, Query, State},
     routing::{get, post},
 };
 use coordinator::{Worker, WorkerEntity, Workflow, WorkflowEntity, WorkflowSpec};
@@ -22,10 +23,43 @@ pub fn routes() -> Router<AppState> {
 }
 
 /// 列出所有工作流
-async fn list_workflows(State(state): State<AppState>) -> ApiJsonResult<Vec<WorkflowEntity>> {
-    let workflows = state.coordinator.list_workflows().await?;
+async fn list_workflows(
+    State(state): State<AppState>,
+    Query(query): Query<ListQuery>,
+) -> ApiJsonResult<PagedResponse<WorkflowResponse>> {
+    let ListQuery { page, page_size, status, sort_by, order } = query;
+    
+    let page = page.unwrap_or(1).max(1);
+    let page_size = page_size.unwrap_or(20).min(100).max(1); // 限制最大100条
+    let sort_by = sort_by.unwrap_or_else(|| "created_at".to_string());
+    let order = order.unwrap_or_else(|| "desc".to_string());
+    
+    let (workflows, total) = state
+        .coordinator
+        .list_workflows_paged(page, page_size, status, sort_by, order)
+        .await?;
 
-    workflows.into_success_json()
+    let workflow_responses: Vec<WorkflowResponse> = workflows
+        .into_iter()
+        .map(WorkflowResponse::from)
+        .collect();
+
+    let total_pages = (total + page_size - 1) / page_size;
+    let pagination = PaginationMeta {
+        page,
+        page_size,
+        total,
+        total_pages,
+        has_next: page < total_pages,
+        has_prev: page > 1,
+    };
+
+    let response = PagedResponse {
+        data: workflow_responses,
+        pagination,
+    };
+
+    response.into_success_json()
 }
 
 /// 获取工作流详细信息

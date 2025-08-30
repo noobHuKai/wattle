@@ -29,6 +29,7 @@ color-eyre = {version = "*"}
 eyre.workspace = true
 
 coordinator = {path = "../../crates/coordinator"}
+storage = {path = "../../crates/storage"}
 
 prometheus = "*"
 
