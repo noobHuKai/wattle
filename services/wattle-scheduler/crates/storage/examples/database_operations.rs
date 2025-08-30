@@ -14,12 +14,12 @@ async fn main() -> eyre::Result<()> {
     
     // Example 1: Initialize database
     println!("\n1. Initializing database...");
-    let db = init_database(Some(db_path.to_string_lossy().to_string())).await?;
+    let db = init_database(Some(db_path.to_string_lossy().to_string()), None).await?;
     println!("✅ Database initialized successfully");
 
     // Example 2: Create repository instance
     println!("\n2. Creating repositories...");
-    let repos = Repositories::new(db_path.to_string_lossy().to_string()).await?;
+    let repos = Repositories::new(Some(db_path.to_string_lossy().to_string()), None).await?;
     println!("✅ Repository instance created");
 
     // Example 3: Create and store workflows
@@ -41,30 +41,39 @@ async fn main() -> eyre::Result<()> {
     env_vars.insert("VERSION".to_string(), "2.0.0".to_string());
 
     let build_worker = Worker {
+
         name: "build-service".to_string(),
         workflow_name: "ci-cd-pipeline".to_string(),
         command: "npm run build".to_string(),
         args: Some(vec!["--production".to_string()]),
         working_dir: Some("/app".to_string()),
         env_vars: Some(env_vars.clone()),
+        inputs: None,
+        outputs: None,
     };
 
     let test_worker = Worker {
+
         name: "run-tests".to_string(),
         workflow_name: "ci-cd-pipeline".to_string(),
         command: "npm test".to_string(),
         args: Some(vec!["--coverage".to_string()]),
         working_dir: Some("/app".to_string()),
         env_vars: Some(env_vars.clone()),
+        inputs: None,
+        outputs: None,
     };
 
     let deploy_worker = Worker {
+
         name: "deploy-service".to_string(),
         workflow_name: "ci-cd-pipeline".to_string(),
         command: "kubectl apply -f deployment.yaml".to_string(),
         args: None,
         working_dir: Some("/app".to_string()),
         env_vars: Some(env_vars),
+        inputs: None,
+        outputs: None,
     };
 
     let complex_workflow = Workflow {
@@ -77,7 +86,7 @@ async fn main() -> eyre::Result<()> {
     println!("✅ Created complex workflow: {}", complex_workflow.name);
 
     // Insert workers
-    repos.insert_workers(&complex_workflow.workers).await?;
+    repos.insert_workerss(&complex_workflow.workers).await?;
     println!("✅ Added {} workers to the workflow", complex_workflow.workers.len());
     for worker in &complex_workflow.workers {
         println!("  - {} - {}", worker.name, worker.command);
@@ -108,7 +117,7 @@ async fn main() -> eyre::Result<()> {
     println!("Workers in 'ci-cd-pipeline':");
     for worker in &workers {
         println!("  - {}: {}", worker.name, worker.command);
-        println!("    Status: {} (created: {})", worker.status, worker.created_at);
+        println!("    Status: {} (created: {})", WorkerStatus::Created, worker.created_at);
         if let Some(ref args) = worker.args {
             println!("    Args: {:?}", args);
         }
@@ -137,7 +146,7 @@ async fn main() -> eyre::Result<()> {
         // Verify the update by checking worker entity
         let workers = repos.get_workers_by_workflow(workflow_name).await?;
         if let Some(worker) = workers.iter().find(|w| w.name == worker_name) {
-            println!("    Confirmed: {} status is now {}", worker.name, worker.status);
+            println!("    Confirmed: {} status is now {}", worker.name, WorkerStatus::Created);
         }
     }
 
@@ -174,7 +183,7 @@ async fn main() -> eyre::Result<()> {
     for workflow in &all_workflows {
         let workers = repos.get_workers_by_workflow(&workflow.name).await?;
         for worker in workers {
-            *status_counts.entry(worker.status).or_insert(0) += 1;
+            *status_counts.entry(WorkerStatus::Created).or_insert(0) += 1;
         }
     }
     

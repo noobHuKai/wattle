@@ -9,7 +9,8 @@ async fn create_test_coordinator() -> Coordinator {
         db_url: Some(temp_dir.path().join("test.db").to_string_lossy().to_string()),
         execution: Some(ExecutionConfig {
             log_dir: Some(temp_dir.path().to_path_buf()),
-            timeout: Some(Duration::from_secs(30)),
+            timeout_secs: Some(30),
+            max_parallel_tasks: Some(4),
         }),
     };
     
@@ -37,12 +38,15 @@ async fn test_coordinator_workflow_operations() {
     env_vars.insert("TEST_ENV".to_string(), "test_value".to_string());
     
     let worker = Worker {
+
         name: "test-worker".to_string(),
         workflow_name: "api-test-workflow".to_string(),
         command: "echo test".to_string(),
         args: Some(vec!["hello".to_string()]),
         working_dir: None,
         env_vars: Some(env_vars),
+        inputs: None,
+        outputs: None,
     };
     
     let workflow = Workflow {
@@ -77,21 +81,27 @@ async fn test_coordinator_worker_operations() {
     // Create workflow with multiple workers
     let workers = vec![
         Worker {
+
             name: "worker1".to_string(),
             workflow_name: "multi-worker-test".to_string(),
             command: "echo worker1".to_string(),
             args: None,
             working_dir: None,
             env_vars: None,
-        },
+        inputs: None,
+        outputs: None,
+    },
         Worker {
+
             name: "worker2".to_string(),
             workflow_name: "multi-worker-test".to_string(),
             command: "echo worker2".to_string(),
             args: None,
             working_dir: None,
             env_vars: None,
-        },
+        inputs: None,
+        outputs: None,
+    },
     ];
     
     let workflow = Workflow {

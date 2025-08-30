@@ -13,7 +13,8 @@ async fn main() -> eyre::Result<()> {
     // Configure the executor
     let config = ExecutionConfig {
         log_dir: Some(temp_dir.path().to_path_buf()),
-        timeout: Some(Duration::from_secs(30)),
+        timeout_secs: Some(30),
+            max_parallel_tasks: Some(4),
     };
     
     let executor = TaskExecutor::new(config);

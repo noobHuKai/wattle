@@ -5,21 +5,18 @@ edition = "2021"
 description = "Wattle C++ SDK using cxx bindings"
 license = "MIT"
 
+# Add empty workspace table to avoid inheriting parent workspace configuration
+[workspace]
+
 [lib]
 crate-type = ["cdylib", "staticlib"]
 
 [dependencies]
-# Wattle Core
-wattle-rs = { path = "../rust" }
-
 # CXX bindings
 cxx = "1.0"
 
 # Async runtime
 tokio = { version = "1.0", features = ["full"] }
-
-# Error handling
-eyre = "0.6"
 
 # Serialization
 serde = { version = "1.0", features = ["derive"] }
@@ -28,8 +25,11 @@ serde_json = "1.0"
 # Arrow support
 arrow-array = "40.0"
 
-# Logging
-tracing = "0.1"
+# Zenoh messaging
+zenoh = "1.5"
+
+# UUID generation
+uuid = { version = "1.0", features = ["v4"] }
 
 [build-dependencies]
 cxx-build = "1.0"

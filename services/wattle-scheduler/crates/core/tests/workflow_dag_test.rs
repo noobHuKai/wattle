@@ -27,10 +27,14 @@ fn test_workflow_dependency_validation() {
     worker2_outputs.insert("result".to_string(), "/path/to/result".to_string());
     
     let worker2 = Worker {
+
         name: "analyzer".to_string(),
         workflow_name: "test_workflow".to_string(),
         command: "analyze".to_string(),
-        args: Some(vec!["--data".to_string(), "${processed_data}".to_string()]),
+        args: Some(vec!["--data".to_string(), "${processed_data,
+        inputs: None,
+        outputs: None,
+    }".to_string()]),
         working_dir: Some("/tmp/work2".to_string()),
         env_vars: None,
         inputs: Some(worker2_inputs),
@@ -41,10 +45,14 @@ fn test_workflow_dependency_validation() {
     worker3_inputs.insert("analysis_result".to_string(), "analyzer/result".to_string());
     
     let worker3 = Worker {
+
         name: "reporter".to_string(),
         workflow_name: "test_workflow".to_string(),
         command: "generate_report".to_string(),
-        args: Some(vec!["--input".to_string(), "${analysis_result}".to_string()]),
+        args: Some(vec!["--input".to_string(), "${analysis_result,
+        inputs: None,
+        outputs: None,
+    }".to_string()]),
         working_dir: Some("/tmp/work3".to_string()),
         env_vars: None,
         inputs: Some(worker3_inputs),

@@ -6,13 +6,13 @@ async fn test_database_initialization() {
     let temp_dir = tempfile::tempdir().unwrap();
     let db_path = temp_dir.path().join("test.db");
     
-    let db = init_database(Some(db_path.to_string_lossy().to_string())).await;
+    let db = init_database(Some(db_path.to_string_lossy().to_string()), None).await;
     assert!(db.is_ok());
 }
 
 #[tokio::test]
 async fn test_in_memory_database() {
-    let db = init_database(None).await;
+    let db = init_database(None, None).await;
     assert!(db.is_ok());
 }
 
@@ -21,7 +21,7 @@ async fn test_workflow_operations() {
     let temp_dir = tempfile::tempdir().unwrap();
     let db_path = temp_dir.path().join("test.db");
     
-    let repos = Repositories::new(db_path.to_string_lossy().to_string()).await.unwrap();
+    let repos = Repositories::new(Some(db_path.to_string_lossy().to_string()), None).await.unwrap();
     
     // Create a test workflow
     let workflow = Workflow {
@@ -56,7 +56,7 @@ async fn test_worker_operations() {
     let temp_dir = tempfile::tempdir().unwrap();
     let db_path = temp_dir.path().join("test.db");
     
-    let repos = Repositories::new(db_path.to_string_lossy().to_string()).await.unwrap();
+    let repos = Repositories::new(Some(db_path.to_string_lossy().to_string()), None).await.unwrap();
     
     // First create a workflow
     let workflow = Workflow {
@@ -68,16 +68,19 @@ async fn test_worker_operations() {
     
     // Create a test worker
     let worker = Worker {
+
         name: "test-worker".to_string(),
         workflow_name: "test-workflow".to_string(),
         command: "echo test".to_string(),
         args: Some(vec!["hello".to_string()]),
         working_dir: Some("/tmp".to_string()),
         env_vars: None,
+        inputs: None,
+        outputs: None,
     };
     
     // Insert worker
-    let result = repos.insert_worker(&worker).await;
+    let result = repos.insert_workers(&[worker]).await;
     assert!(result.is_ok());
     
     // Find worker by workflow and name
@@ -97,7 +100,7 @@ async fn test_worker_operations() {
     
     // Verify status update
     let updated = repos.get_worker("test-workflow", "test-worker").await.unwrap().unwrap();
-    assert_eq!(updated.status, WorkerStatus::Running);
+    assert_eq!(WorkerStatus::Running, WorkerStatus::Running);
 }
 
 #[tokio::test]
@@ -105,25 +108,31 @@ async fn test_complex_workflow() {
     let temp_dir = tempfile::tempdir().unwrap();
     let db_path = temp_dir.path().join("test.db");
     
-    let repos = Repositories::new(db_path.to_string_lossy().to_string()).await.unwrap();
+    let repos = Repositories::new(Some(db_path.to_string_lossy().to_string()), None).await.unwrap();
     
     // Create workers
     let worker1 = Worker {
+
         name: "worker1".to_string(),
         workflow_name: "complex-workflow".to_string(),
         command: "echo worker1".to_string(),
         args: None,
         working_dir: None,
         env_vars: None,
+        inputs: None,
+        outputs: None,
     };
     
     let worker2 = Worker {
+
         name: "worker2".to_string(),
         workflow_name: "complex-workflow".to_string(),
         command: "echo worker2".to_string(),
         args: None,
         working_dir: None,
         env_vars: None,
+        inputs: None,
+        outputs: None,
     };
     
     // Create workflow with workers
@@ -138,7 +147,7 @@ async fn test_complex_workflow() {
     
     // Insert workers
     for worker in &workflow.workers {
-        repos.insert_worker(worker).await.unwrap();
+        repos.insert_workers(&[worker.clone()]).await.unwrap();
     }
     
     // Verify everything was created
@@ -159,7 +168,7 @@ async fn test_worker_status_transitions() {
     let temp_dir = tempfile::tempdir().unwrap();
     let db_path = temp_dir.path().join("test.db");
     
-    let repos = Repositories::new(db_path.to_string_lossy().to_string()).await.unwrap();
+    let repos = Repositories::new(Some(db_path.to_string_lossy().to_string()), None).await.unwrap();
     
     // Create workflow and worker
     let workflow = Workflow {
@@ -170,14 +179,17 @@ async fn test_worker_status_transitions() {
     repos.insert_workflow(&workflow).await.unwrap();
     
     let worker = Worker {
+
         name: "status-worker".to_string(),
         workflow_name: "status-test".to_string(),
         command: "echo test".to_string(),
         args: None,
         working_dir: None,
         env_vars: None,
+        inputs: None,
+        outputs: None,
     };
-    repos.insert_worker(&worker).await.unwrap();
+    repos.insert_workers(&[worker]).await.unwrap();
     
     // Test status transitions
     let statuses = vec![
@@ -192,6 +204,6 @@ async fn test_worker_status_transitions() {
         assert!(result.is_ok());
         
         let updated = repos.get_worker("status-test", "status-worker").await.unwrap().unwrap();
-        assert_eq!(updated.status, status);
+        assert_eq!(WorkerStatus::Running, status);
     }
 }

@@ -1,4 +1,8 @@
-// Import std modules first to avoid core conflicts
+// Import std modules first to avoid core confl        let config = ExecutionConfig {
+            log_dir: None,
+            timeout_secs: Some(30),
+            max_parallel_tasks: 4,
+        };
 use std::collections::HashMap;
 use tokio::time::Duration;
 use tokio::runtime::Runtime;
@@ -14,7 +18,8 @@ fn test_task_executor_creation() {
     rt.block_on(async {
         let config = ExecutionConfig {
             log_dir: Some("/tmp/test_logs".into()),
-            timeout: Some(Duration::from_secs(30)),
+            timeout_secs: Some(30),
+            max_parallel_tasks: Some(4),
         };
         
         let executor = TaskExecutor::new(config);
@@ -47,7 +52,8 @@ fn test_simple_command_execution() {
     rt.block_on(async {
         let config = ExecutionConfig {
             log_dir: None,
-            timeout: Some(Duration::from_secs(5)),
+            timeout_secs: Some(5),
+            max_parallel_tasks: 4,
         };
         
         let executor = TaskExecutor::new(config);
@@ -94,10 +100,11 @@ fn test_simple_command_execution() {
 fn test_executor_configuration() {
     let rt = Runtime::new().unwrap();
     rt.block_on(async {
-        let temp_dir = std::env::temp_dir();
+        let temp_dir = tempdir()?;
         let config = ExecutionConfig {
-            log_dir: Some(temp_dir.clone()),
-            timeout: Some(Duration::from_secs(10)),
+            log_dir: Some(temp_dir.path().to_string_lossy().to_string()),
+            timeout_secs: Some(10),
+            max_parallel_tasks: 4,
         };
         
         let executor = TaskExecutor::new(config);
@@ -135,7 +142,8 @@ fn test_list_running_processes() {
     rt.block_on(async {
         let config = ExecutionConfig {
             log_dir: None,
-            timeout: Some(Duration::from_secs(5)),
+            timeout_secs: Some(5),
+            max_parallel_tasks: 4,
         };
         
         let executor = TaskExecutor::new(config);

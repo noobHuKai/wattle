@@ -23,7 +23,7 @@ async fn main() -> Result<()> {
         "numbers": [1.5, 2.7, 3.2, 4.8, 5.1]
     });
 
-    match client.request_json("server", "calculate", &request_data).await {
+    match client.request_json("server", "calculate", &request_data, Some(5000)).await {
         Ok(response) => {
             println!("JSON Response: {}", serde_json::to_string_pretty(&response)?);
         },
@@ -34,7 +34,7 @@ async fn main() -> Result<()> {
 
     // 发送 Arrow 请求
     let input_batch = create_sample_batch()?;
-    match client.request_arrow("server", "process", &input_batch).await {
+    match client.request_arrow("server", "process", &input_batch, Some(5000)).await {
         Ok(response_batch) => {
             println!("Arrow Response: {} rows, {} columns", 
                      response_batch.num_rows(), response_batch.num_columns());

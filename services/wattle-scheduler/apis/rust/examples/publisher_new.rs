@@ -44,8 +44,13 @@ async fn main() -> Result<()> {
         json!({"chunk": 3, "data": "Third chunk"}),
     ];
     
-    client.publish_stream_json("stream_feed", stream_data).await?;
-    println!("Published stream data");
+    // 使用 publish_json 逐个发布数据块
+    for chunk in stream_data {
+        client.publish_json("stream_feed", &chunk).await?;
+        println!("Published chunk: {}", chunk);
+        tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
+    }
+    println!("Published all stream data");
 
     // 保持运行
     println!("Publisher running... Press Ctrl+C to stop");

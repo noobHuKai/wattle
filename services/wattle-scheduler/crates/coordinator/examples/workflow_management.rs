@@ -1,5 +1,5 @@
 use coordinator::{Coordinator, CoordinatorConfig, Workflow, Worker};
-use core::ExecutionConfig;
+use core::{ExecutionConfig, DatabaseConfig};
 use std::{collections::HashMap, time::Duration};
 use tokio::time::sleep;
 
@@ -12,14 +12,35 @@ async fn main() -> eyre::Result<()> {
     
     // Configure the coordinator
     let config = CoordinatorConfig {
+        mode: Some("standalone".to_string()),
         db_url: Some(temp_dir.path().join("example.db").to_string_lossy().to_string()),
-        execution: Some(ExecutionConfig {
-            log_dir: Some(temp_dir.path().join("logs").to_path_buf()),
-            timeout: Some(Duration::from_secs(30)),
-        }),
+        worker_timeout_secs: Some(300),
+        max_concurrent_workers: Some(4),
     };
     
-    let coordinator = Coordinator::new(config).await?;
+    let exec_config = ExecutionConfig {
+        log_dir: Some(temp_dir.path().join("logs").to_string_lossy().to_string()),
+        timeout_secs: Some(30),
+        max_parallel_tasks: Some(4),
+    };
+    
+    let db_config = DatabaseConfig {
+        max_connections: Some(10),
+        connection_timeout_secs: Some(30),
+        idle_timeout_secs: Some(300),
+    };
+    
+    let exec_config = ExecutionConfig {
+        log_dir: None,
+        timeout_secs: Some(30),
+        max_parallel_tasks: Some(4),
+    };
+    let db_config = core::DatabaseConfig {
+        max_connections: Some(10),
+        connection_timeout_secs: Some(30),
+        idle_timeout_secs: Some(300),
+    };
+    let coordinator = Coordinator::new(config, exec_config, db_config, exec_config, db_config).await?;
     println!("✅ Created Coordinator with database: {:?}", temp_dir.path().join("example.db"));
     println!();
 
@@ -27,11 +48,13 @@ async fn main() -> eyre::Result<()> {
     println!("1. Creating a simple workflow...");
     let simple_worker = Worker {
         name: "greeting-worker".to_string(),
-        workflow_name: "greeting-workflow".to_string(),
-        command: "echo 'Hello from Wattle Coordinator!'".to_string(),
-        args: None,
-        working_dir: Some(temp_dir.path().to_string_lossy().to_string()),
-        env_vars: None,
+        workflow_name: "simple-greeting".to_string(),
+        command: "echo".to_string(),
+        args: Some(vec!["Hello, Wattle!".to_string()]),
+        working_dir: None,
+        env_vars: Some(HashMap::new()),
+        inputs: None,
+        outputs: None,
     };
 
     let simple_workflow = Workflow {
@@ -57,6 +80,12 @@ async fn main() -> eyre::Result<()> {
         args: None,
         working_dir: Some(temp_dir.path().to_string_lossy().to_string()),
         env_vars: Some(env_vars.clone()),
+        inputs: None,
+        outputs: Some({
+            let mut outputs = HashMap::new();
+            outputs.insert("setup_result".to_string(), "setup_completed".to_string());
+            outputs
+        }),
     };
 
     let build_worker = Worker {
@@ -66,6 +95,16 @@ async fn main() -> eyre::Result<()> {
         args: None,
         working_dir: Some(temp_dir.path().to_string_lossy().to_string()),
         env_vars: Some(env_vars.clone()),
+        inputs: Some({
+            let mut inputs = HashMap::new();
+            inputs.insert("setup_dep".to_string(), "setup-worker/setup_result".to_string());
+            inputs
+        }),
+        outputs: Some({
+            let mut outputs = HashMap::new();
+            outputs.insert("build_result".to_string(), "build_artifacts".to_string());
+            outputs
+        }),
     };
 
     let test_worker = Worker {
@@ -75,6 +114,16 @@ async fn main() -> eyre::Result<()> {
         args: None,
         working_dir: Some(temp_dir.path().to_string_lossy().to_string()),
         env_vars: Some(env_vars),
+        inputs: Some({
+            let mut inputs = HashMap::new();
+            inputs.insert("build_dep".to_string(), "build-worker/build_result".to_string());
+            inputs
+        }),
+        outputs: Some({
+            let mut outputs = HashMap::new();
+            outputs.insert("test_result".to_string(), "test_passed".to_string());
+            outputs
+        }),
     };
 
     let build_workflow = Workflow {
@@ -116,7 +165,7 @@ async fn main() -> eyre::Result<()> {
     println!("Found {} workers:", workers.len());
     for worker in &workers {
         println!("  - {}: {}", worker.name, worker.command);
-        println!("    Status: {} (created at: {})", worker.status, worker.created_at);
+        println!("    Status: {} (created at: {})", WorkerStatus::Created, worker.created_at);
     }
 
     // Example 7: Run workflows

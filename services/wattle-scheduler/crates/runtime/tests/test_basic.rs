@@ -8,7 +8,8 @@ use ::core::{ExecutionConfig, Worker};
 async fn test_executor_creation() {
     let config = ExecutionConfig {
         log_dir: None,
-        timeout: Some(Duration::from_secs(10)),
+        timeout_secs: Some(10),
+            max_parallel_tasks: Some(4),
     };
     
     let executor = TaskExecutor::new(config);
@@ -39,7 +40,8 @@ async fn test_worker_structure() {
 async fn test_basic_execution() {
     let config = ExecutionConfig {
         log_dir: None,
-        timeout: Some(Duration::from_secs(5)),
+        timeout_secs: Some(5),
+            max_parallel_tasks: Some(4),
     };
     
     let executor = TaskExecutor::new(config);

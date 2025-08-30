@@ -17,12 +17,23 @@ async fn main() -> eyre::Result<()> {
         db_url: Some(db_path.to_string_lossy().to_string()),
         execution: Some(ExecutionConfig {
             log_dir: Some(temp_dir.path().join("logs").to_path_buf()),
-            timeout: Some(Duration::from_secs(30)),
+            timeout_secs: Some(30),
+            max_parallel_tasks: Some(4),
         }),
     };
     
     println!("Creating coordinator with database: {:?}", db_path);
-    let coordinator = Coordinator::new(config).await?;
+    let exec_config = ExecutionConfig {
+        log_dir: None,
+        timeout_secs: Some(30),
+        max_parallel_tasks: Some(4),
+    };
+    let db_config = core::DatabaseConfig {
+        max_connections: Some(10),
+        connection_timeout_secs: Some(30),
+        idle_timeout_secs: Some(300),
+    };
+    let coordinator = Coordinator::new(config, exec_config, db_config).await?;
     println!("✅ Coordinator created successfully!\n");
 
     // Demonstrate API operations that the server would handle
@@ -32,6 +43,7 @@ async fn main() -> eyre::Result<()> {
     println!("1. Creating workflows...");
     
     let web_worker = Worker {
+
         name: "frontend-build".to_string(),
         workflow_name: "web-deployment".to_string(),
         command: "npm run build".to_string(),
@@ -41,17 +53,22 @@ async fn main() -> eyre::Result<()> {
             let mut env = HashMap::new();
             env.insert("NODE_ENV".to_string(), "production".to_string());
             env.insert("API_URL".to_string(), "https://api.example.com".to_string());
-            Some(env)
-        },
+            Some(env),
+        inputs: None,
+        outputs: None,
+    },
     };
 
     let api_worker = Worker {
+
         name: "api-deploy".to_string(),
         workflow_name: "web-deployment".to_string(),
         command: "kubectl apply -f deployment.yaml".to_string(),
         args: None,
         working_dir: Some("/app/api".to_string()),
         env_vars: None,
+        inputs: None,
+        outputs: None,
     };
 
     let workflow = Workflow {
@@ -65,12 +82,15 @@ async fn main() -> eyre::Result<()> {
 
     // Create another workflow
     let test_worker = Worker {
+
         name: "unit-tests".to_string(),
         workflow_name: "testing-pipeline".to_string(),
         command: "npm test".to_string(),
         args: Some(vec!["--coverage".to_string()]),
         working_dir: Some("/app".to_string()),
         env_vars: None,
+        inputs: None,
+        outputs: None,
     };
 
     let test_workflow = Workflow {
@@ -105,7 +125,7 @@ async fn main() -> eyre::Result<()> {
     println!("  Workers in 'web-deployment':");
     for worker in &workers {
         println!("    - {}: {}", worker.name, worker.command);
-        println!("      Status: {}", worker.status);
+        println!("      Status: {}", WorkerStatus::Created);
     }
 
     // 5. Run workflow (POST /api/v1/workflows/{name}/run)

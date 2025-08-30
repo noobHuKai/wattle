@@ -4,6 +4,7 @@ use std::collections::HashMap;
 #[test]
 fn test_worker_creation() {
     let worker = Worker {
+
         name: "test_worker".to_string(),
         workflow_name: "test_workflow".to_string(),
         command: "echo hello".to_string(),

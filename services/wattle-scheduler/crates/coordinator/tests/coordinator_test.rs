@@ -15,7 +15,8 @@ fn test_coordinator_creation() {
             db_url: Some(temp_dir.path().join("test.db").to_string_lossy().to_string()),
             execution: Some(ExecutionConfig {
                 log_dir: Some(temp_dir.path().to_path_buf()),
-                timeout: Some(Duration::from_secs(30)),
+                timeout_secs: Some(30),
+            max_parallel_tasks: Some(4),
             }),
         };
         
@@ -33,11 +34,22 @@ fn test_workflow_creation_and_retrieval() {
             db_url: Some(temp_dir.path().join("test.db").to_string_lossy().to_string()),
             execution: Some(ExecutionConfig {
                 log_dir: Some(temp_dir.path().to_path_buf()),
-                timeout: Some(Duration::from_secs(30)),
+                timeout_secs: Some(30),
+            max_parallel_tasks: Some(4),
             }),
         };
         
-        let coordinator = Coordinator::new(config).await.unwrap();
+        let exec_config = ExecutionConfig {
+        log_dir: None,
+        timeout_secs: Some(30),
+        max_parallel_tasks: Some(4),
+    };
+    let db_config = core::DatabaseConfig {
+        max_connections: Some(10),
+        connection_timeout_secs: Some(30),
+        idle_timeout_secs: Some(300),
+    };
+    let coordinator = Coordinator::new(config, exec_config, db_config).await.unwrap();
         
         // Create a test workflow
         let worker = Worker {
@@ -77,11 +89,22 @@ fn test_workflow_execution() {
             db_url: Some(temp_dir.path().join("test.db").to_string_lossy().to_string()),
             execution: Some(ExecutionConfig {
                 log_dir: Some(temp_dir.path().to_path_buf()),
-                timeout: Some(Duration::from_secs(30)),
+                timeout_secs: Some(30),
+            max_parallel_tasks: Some(4),
             }),
         };
         
-        let coordinator = Coordinator::new(config).await.unwrap();
+        let exec_config = ExecutionConfig {
+        log_dir: None,
+        timeout_secs: Some(30),
+        max_parallel_tasks: Some(4),
+    };
+    let db_config = core::DatabaseConfig {
+        max_connections: Some(10),
+        connection_timeout_secs: Some(30),
+        idle_timeout_secs: Some(300),
+    };
+    let coordinator = Coordinator::new(config, exec_config, db_config).await.unwrap();
         
         // Create and submit workflow
         let worker = Worker {
@@ -118,11 +141,22 @@ fn test_workflow_not_found() {
             db_url: Some(temp_dir.path().join("test.db").to_string_lossy().to_string()),
             execution: Some(ExecutionConfig {
                 log_dir: Some(temp_dir.path().to_path_buf()),
-                timeout: Some(Duration::from_secs(30)),
+                timeout_secs: Some(30),
+            max_parallel_tasks: Some(4),
             }),
         };
         
-        let coordinator = Coordinator::new(config).await.unwrap();
+        let exec_config = ExecutionConfig {
+        log_dir: None,
+        timeout_secs: Some(30),
+        max_parallel_tasks: Some(4),
+    };
+    let db_config = core::DatabaseConfig {
+        max_connections: Some(10),
+        connection_timeout_secs: Some(30),
+        idle_timeout_secs: Some(300),
+    };
+    let coordinator = Coordinator::new(config, exec_config, db_config).await.unwrap();
         
         // Check if workflow exists
         let exists = coordinator.workflow_exists("non-existent").await.unwrap();
@@ -139,11 +173,22 @@ fn test_list_empty_workflows() {
             db_url: Some(temp_dir.path().join("test.db").to_string_lossy().to_string()),
             execution: Some(ExecutionConfig {
                 log_dir: Some(temp_dir.path().to_path_buf()),
-                timeout: Some(Duration::from_secs(30)),
+                timeout_secs: Some(30),
+            max_parallel_tasks: Some(4),
             }),
         };
         
-        let coordinator = Coordinator::new(config).await.unwrap();
+        let exec_config = ExecutionConfig {
+        log_dir: None,
+        timeout_secs: Some(30),
+        max_parallel_tasks: Some(4),
+    };
+    let db_config = core::DatabaseConfig {
+        max_connections: Some(10),
+        connection_timeout_secs: Some(30),
+        idle_timeout_secs: Some(300),
+    };
+    let coordinator = Coordinator::new(config, exec_config, db_config).await.unwrap();
         
         let workflows = coordinator.list_workflows().await.unwrap();
         assert!(workflows.is_empty());

@@ -13,6 +13,7 @@ fn main() {
     fetcher_outputs.insert("metadata".to_string(), "/tmp/metadata.json".to_string());
     
     let data_fetcher = Worker {
+
         name: "data_fetcher".to_string(),
         workflow_name: "data_pipeline".to_string(),
         command: "fetch_data".to_string(),
