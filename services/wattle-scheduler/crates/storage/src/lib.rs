@@ -3,7 +3,7 @@ use std::path::PathBuf;
 pub mod model;
 mod repositories;
 
-pub use model::{TaskEntity, TaskGroupEntity, TaskLogEntity};
+pub use model::{WorkerEntity, WorkflowEntity, WorkerLogEntity};
 pub use repositories::Repositories;
 pub type DB = sqlx::SqlitePool;
 

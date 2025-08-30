@@ -131,13 +131,15 @@ checksum = "b0674a1ddeecb70197781e945de4b3b8ffb61fa939a5597bcf48503737663100"
 name = "apiserver"
 version = "0.1.0"
 dependencies = [
+ "async-stream",
  "axum",
  "clap",
  "color-eyre",
+ "coordinator",
  "dotenv",
  "eyre",
+ "futures",
  "prometheus",
- "scheduler",
  "serde",
  "serde_json",
  "sysinfo",
@@ -194,6 +196,28 @@ name = "asn1-rs-impl"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7b18050c2cd6fe86c3a76584ef5e0baf286d038cda203eb6223df2cc413565f7"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.106",
+]
+
+[[package]]
+name = "async-stream"
+version = "0.3.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0b5a71a6f37880a80d1d7f19efd781e4b5de42c88f0722cc13bcb6cc2cfe8476"
+dependencies = [
+ "async-stream-impl",
+ "futures-core",
+ "pin-project-lite",
+]
+
+[[package]]
+name = "async-stream-impl"
+version = "0.3.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c7c24de15d275a1ecfd47a380fb4d5ec9bfe0933f309ed5e705b775596a3574d"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -536,6 +560,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "coordinator"
+version = "0.1.0"
+dependencies = [
+ "core",
+ "eyre",
+ "rand 0.9.2",
+ "runtime",
+ "serde",
+ "storage",
+ "tokio",
+ "tracing",
+ "which",
+ "zenoh",
+]
+
+[[package]]
 name = "core"
 version = "0.1.0"
 dependencies = [
@@ -861,12 +901,6 @@ dependencies = [
  "siphasher",
  "wide",
 ]
-
-[[package]]
-name = "fastrand"
-version = "2.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "37909eebbb50d72f9059c3b6d82c0463f2ff062c9e95845c43a6c9c0355411be"
 
 [[package]]
 name = "fixedbitset"
@@ -2446,9 +2480,10 @@ dependencies = [
 name = "runtime"
 version = "0.1.0"
 dependencies = [
+ "async-stream",
  "core",
  "eyre",
- "tempfile",
+ "shell-words",
  "tokio",
  "tracing",
 ]
@@ -2628,22 +2663,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1f29ebaa345f945cec9fbbc532eb307f0fdad8161f281b6369539c8d84876b3d"
 dependencies = [
  "windows-sys 0.59.0",
-]
-
-[[package]]
-name = "scheduler"
-version = "0.1.0"
-dependencies = [
- "core",
- "eyre",
- "rand 0.9.2",
- "runtime",
- "serde",
- "storage",
- "tokio",
- "tracing",
- "which",
- "zenoh",
 ]
 
 [[package]]
@@ -2899,6 +2918,12 @@ checksum = "f40ca3c46823713e0d4209592e8d6e826aa57e928f09752619fc696c499637f6"
 dependencies = [
  "lazy_static",
 ]
+
+[[package]]
+name = "shell-words"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "24188a676b6ae68c3b2cb3a01be17fbf7240ce009799bb56d5b1409051e78fde"
 
 [[package]]
 name = "shellexpand"
@@ -3280,19 +3305,6 @@ dependencies = [
  "objc2-core-foundation",
  "objc2-io-kit",
  "windows",
-]
-
-[[package]]
-name = "tempfile"
-version = "3.21.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "15b61f8f20e3a6f7e0649d825294eaf317edce30f82cf6026e7e4cb9222a7d1e"
-dependencies = [
- "fastrand",
- "getrandom 0.3.3",
- "once_cell",
- "rustix",
- "windows-sys 0.60.2",
 ]
 
 [[package]]

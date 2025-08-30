@@ -3,9 +3,9 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
-pub struct Task {
+pub struct Worker {
     pub name: String,
-    pub group_name: String,
+    pub workflow_name: String,
     pub command: String,
     pub args: Option<Vec<String>>,
     pub working_dir: Option<String>,
@@ -13,14 +13,14 @@ pub struct Task {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
-pub struct TaskGroup {
+pub struct Workflow {
     pub name: String,
     pub working_dir: Option<String>,
-    pub tasks: Vec<Task>,
+    pub workers: Vec<Worker>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq)]
-pub enum TaskStatus {
+pub enum WorkerStatus {
     #[default]
     Created,
     Running,
@@ -28,14 +28,14 @@ pub enum TaskStatus {
     Failed,
     Cancelled,
 }
-impl std::fmt::Display for TaskStatus {
+impl std::fmt::Display for WorkerStatus {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let status_str = match self {
-            TaskStatus::Created => "created",
-            TaskStatus::Running => "running",
-            TaskStatus::Completed => "completed",
-            TaskStatus::Failed => "failed",
-            TaskStatus::Cancelled => "cancelled",
+            WorkerStatus::Created => "created",
+            WorkerStatus::Running => "running",
+            WorkerStatus::Completed => "completed",
+            WorkerStatus::Failed => "failed",
+            WorkerStatus::Cancelled => "cancelled",
         };
         write!(f, "{}", status_str)
     }

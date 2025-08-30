@@ -1,11 +1,11 @@
-use core::{Task, TaskGroup};
+use core::{Worker, Workflow};
 
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 
-/// 数据库中的任务组实体
+/// 数据库中的工作流实体
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
-pub struct TaskGroupEntity {
+pub struct WorkflowEntity {
     pub name: String,
     pub working_dir: Option<String>,
     pub status: String,
@@ -15,20 +15,20 @@ pub struct TaskGroupEntity {
     pub completed_at: Option<String>,
 }
 
-impl Into<TaskGroup> for TaskGroupEntity {
-    fn into(self) -> TaskGroup {
-        TaskGroup {
+impl Into<Workflow> for WorkflowEntity {
+    fn into(self) -> Workflow {
+        Workflow {
             name: self.name,
             working_dir: self.working_dir,
-            tasks: Vec::new(), // 需要单独查询
+            workers: Vec::new(), // 需要单独查询
         }
     }
 }
 
-/// 数据库中的任务实体
+/// 数据库中的工作者实体
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
-pub struct TaskEntity {
-    pub group_name: String,
+pub struct WorkerEntity {
+    pub workflow_name: String,
     pub name: String,
     pub command: String,
     pub args: Option<String>, // JSON 字符串
@@ -41,10 +41,11 @@ pub struct TaskEntity {
     pub started_at: Option<String>,
     pub completed_at: Option<String>,
 }
-impl Into<Task> for TaskEntity {
-    fn into(self) -> Task {
-        Task {
-            group_name: self.group_name,
+
+impl Into<Worker> for WorkerEntity {
+    fn into(self) -> Worker {
+        Worker {
+            workflow_name: self.workflow_name,
             name: self.name,
             command: self.command,
             args: if let Some(args_str) = self.args {
@@ -62,20 +63,20 @@ impl Into<Task> for TaskEntity {
     }
 }
 
-/// 数据库中的任务日志实体
+/// 数据库中的工作者日志实体
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
-pub struct TaskLogEntity {
+pub struct WorkerLogEntity {
     pub id: i64,
-    pub group_name: String,
-    pub task_name: String,
+    pub workflow_name: String,
+    pub worker_name: String,
     pub log_type: String,
     pub file_path: String,
     pub created_at: String,
 }
 
-/// 任务实体转换为业务模型的方法
-impl TaskEntity {
-    pub fn to_task(&self) -> Result<core::Task, serde_json::Error> {
+/// 工作者实体转换为业务模型的方法
+impl WorkerEntity {
+    pub fn to_worker(&self) -> Result<core::Worker, serde_json::Error> {
         let args = if let Some(args_str) = &self.args {
             Some(serde_json::from_str(args_str)?)
         } else {
@@ -88,34 +89,51 @@ impl TaskEntity {
             None
         };
 
-        Ok(core::Task {
+        Ok(core::Worker {
             name: self.name.clone(),
-            group_name: self.group_name.clone(),
+            workflow_name: self.workflow_name.clone(),
             command: self.command.clone(),
             args,
             working_dir: self.working_dir.clone(),
             env_vars,
         })
     }
+
+    pub fn get_input_schema(&self) -> Option<std::collections::HashMap<String, serde_json::Value>> {
+        // 从数据库或其他地方获取输入 schema
+        // 这里是示例实现
+        None
+    }
+
+    pub fn get_output_schema(&self) -> Option<std::collections::HashMap<String, serde_json::Value>> {
+        // 从数据库或其他地方获取输出 schema  
+        // 这里是示例实现
+        None
+    }
 }
 
-/// 任务组实体转换为业务模型的方法
-impl TaskGroupEntity {
-    pub fn to_task_group(&self) -> core::TaskGroup {
-        core::TaskGroup {
+/// 工作流实体转换为业务模型的方法
+impl WorkflowEntity {
+    pub fn to_workflow(&self, workers: Vec<WorkerEntity>) -> Result<core::Workflow, serde_json::Error> {
+        let mut worker_list = Vec::new();
+        for worker_entity in workers {
+            worker_list.push(worker_entity.to_worker()?);
+        }
+
+        Ok(core::Workflow {
             name: self.name.clone(),
             working_dir: self.working_dir.clone(),
-            tasks: Vec::new(), // 需要单独查询
-        }
+            workers: worker_list,
+        })
     }
 }
 
 /// 业务模型转换为数据库实体的方法
-impl From<&core::TaskGroup> for TaskGroupEntity {
-    fn from(task_group: &core::TaskGroup) -> Self {
-        TaskGroupEntity {
-            name: task_group.name.clone(),
-            working_dir: task_group.working_dir.clone(),
+impl From<&core::Workflow> for WorkflowEntity {
+    fn from(workflow: &core::Workflow) -> Self {
+        WorkflowEntity {
+            name: workflow.name.clone(),
+            working_dir: workflow.working_dir.clone(),
             status: "created".to_string(),
             created_at: chrono::Utc::now().to_rfc3339(),
             deleted_at: None,
@@ -125,21 +143,15 @@ impl From<&core::TaskGroup> for TaskGroupEntity {
     }
 }
 
-impl From<&core::Task> for TaskEntity {
-    fn from(task: &core::Task) -> Self {
-        TaskEntity {
-            group_name: task.group_name.clone(),
-            name: task.name.clone(),
-            command: task.command.clone(),
-            args: task
-                .args
-                .as_ref()
-                .map(|v| serde_json::to_string(v).unwrap()),
-            working_dir: task.working_dir.clone(),
-            env_vars: task
-                .env_vars
-                .as_ref()
-                .map(|v| serde_json::to_string(v).unwrap()),
+impl From<&core::Worker> for WorkerEntity {
+    fn from(worker: &core::Worker) -> Self {
+        WorkerEntity {
+            workflow_name: worker.workflow_name.clone(),
+            name: worker.name.clone(),
+            command: worker.command.clone(),
+            args: worker.args.as_ref().map(|args| serde_json::to_string(args).unwrap_or_default()),
+            working_dir: worker.working_dir.clone(),
+            env_vars: worker.env_vars.as_ref().map(|env| serde_json::to_string(env).unwrap_or_default()),
             status: "created".to_string(),
             error_message: None,
             created_at: chrono::Utc::now().to_rfc3339(),

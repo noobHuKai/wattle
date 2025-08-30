@@ -25,7 +25,9 @@ tower-http = { version = "0.6.6", features = ["trace", "timeout", "cors"] }
 color-eyre = {version = "*"}
 eyre.workspace = true
 
-scheduler = {path = "../../crates/scheduler"}
+coordinator = {path = "../../crates/coordinator"}
 
 prometheus = "*"
+futures = "0.3"
+async-stream = "0.3"
 sysinfo = "*"

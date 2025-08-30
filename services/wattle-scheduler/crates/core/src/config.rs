@@ -19,7 +19,7 @@ impl Default for ExecutionConfig {
 }
 
 #[derive(Debug, Clone, Deserialize, Default)]
-pub struct SchedulerConfig {
+pub struct CoordinatorConfig {
     pub db_url: Option<String>,
     pub execution: Option<ExecutionConfig>,
 }

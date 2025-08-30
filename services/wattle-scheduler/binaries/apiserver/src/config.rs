@@ -1,10 +1,11 @@
+use coordinator::CoordinatorConfig;
 use serde::Deserialize;
 use std::{fs, path::Path};
 
 #[derive(Debug, Clone, Deserialize, Default)]
 pub struct Config {
     pub server: ServerConfig,
-    pub scheduler: Option<scheduler::SchedulerConfig>,
+    pub coordinator: Option<CoordinatorConfig>,
 }
 
 #[derive(Debug, Clone, Deserialize, Default)]

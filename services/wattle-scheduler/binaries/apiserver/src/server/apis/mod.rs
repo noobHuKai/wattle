@@ -1,5 +1,5 @@
-// pub mod task;
-pub mod task_group;
+pub mod worker;
+pub mod workflow;
 
 pub use super::AppState;
 use std::time::Duration;
@@ -11,7 +11,9 @@ pub async fn api_routes(state: AppState) -> eyre::Result<Router> {
     Ok(Router::new()
         .nest(
             "/api",
-            Router::new().nest("/task_groups", task_group::routes()), // .nest("/tasks", task::routes()),
+            Router::new()
+                .nest("/workflows", workflow::routes())
+                .nest("/workers", worker::routes()),
         )
         .layer((
             // Tracing

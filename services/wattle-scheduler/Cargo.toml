@@ -4,7 +4,7 @@ members = [
     "binaries/cli",
     "crates/core",
     "crates/runtime",
-    "crates/scheduler",
+    "crates/coordinator",
     "crates/storage",
     "apis/rust",
 ]

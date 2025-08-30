@@ -5,9 +5,8 @@ edition.workspace = true
 
 [dependencies]
 core = { path = "../core" }
-eyre ={ workspace = true}
-tracing = { workspace = true }
-tokio ={ workspace = true}
-
-[dev-dependencies]
-tempfile = "*"
+eyre.workspace = true
+tokio.workspace = true
+async-stream = "0.3"
+tracing = "0.1"
+shell-words = "1.1"
