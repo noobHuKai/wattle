@@ -199,8 +199,12 @@ impl TaskExecutor {
 
         // 获取日志路径
         let default_log_dir = PathBuf::from("logs");
-        let log_dir = self.config.log_dir.as_ref().unwrap_or(&default_log_dir);
-        let (stdout_path, stderr_path) = Self::get_log_paths(log_dir, &worker).await?;
+        let log_dir = if let Some(ref log_dir_str) = self.config.log_dir {
+            PathBuf::from(log_dir_str)
+        } else {
+            default_log_dir
+        };
+        let (stdout_path, stderr_path) = Self::get_log_paths(&log_dir, &worker).await?;
 
         // 设置环境变量
         let env_vars = Self::setup_environment(&worker)?;

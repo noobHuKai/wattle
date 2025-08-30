@@ -1,4 +1,4 @@
-use crate::Config;
+use core::Settings;
 use tokio::signal;
 
 mod apis;
@@ -10,8 +10,10 @@ mod state;
 pub use state::AppState;
 
 /// 运行服务器
-pub async fn run_server(cfg: Config) -> eyre::Result<()> {
-    let addr = cfg.get_addr();
+pub async fn run_server(cfg: Settings) -> eyre::Result<()> {
+    let host = cfg.server.host.as_ref().unwrap_or(&"localhost".to_string()).clone();
+    let port = cfg.server.port.unwrap_or(9240);
+    let addr = format!("{}:{}", host, port);
     let listener = tokio::net::TcpListener::bind(&addr).await?;
 
     let shared_state = AppState::new(cfg).await?;

@@ -2,12 +2,11 @@
 host = "localhost"
 port = 9240
 
-
 [coordinator]
 # Sequential, Parallel, DependencyBased
 mode = "Sequential"
 db_url = "configs/wattle.db"
 
-[coordinator.database]
+[database]
 max_connections = 50
-
+connection_timeout_secs = 20

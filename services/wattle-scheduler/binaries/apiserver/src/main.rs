@@ -1,11 +1,9 @@
 use clap::Parser as _;
+use core::Settings;
 use tracing_error::ErrorLayer;
 use tracing_subscriber::{EnvFilter, fmt, prelude::*};
 mod args;
-mod config;
 mod server;
-
-pub use config::Config;
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
@@ -55,7 +53,7 @@ async fn main() -> eyre::Result<()> {
 
 pub async fn run_daemon(args: args::Args) -> eyre::Result<()> {
     // Parse Config File
-    let cfg = config::Config::new(args.config)?;
+    let cfg = Settings::from_file(&args.config.to_string_lossy())?;
     // Run Server
     server::run_server(cfg).await?;
     Ok(())

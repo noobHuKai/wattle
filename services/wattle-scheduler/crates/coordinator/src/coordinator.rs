@@ -1,6 +1,6 @@
 use crate::{WorkerInfo, zenoh_manager::ZenohManager, workflow_manager::WorkflowManager, worker_manager::WorkerManager};
 use core::{
-    CoordinatorConfig, ExecutionConfig, Settings,
+    CoordinatorConfig, DatabaseConfig, ExecutionConfig, Settings,
     Workflow,
 };
 use eyre::{Result, eyre};
@@ -18,10 +18,9 @@ pub struct Coordinator {
 }
 
 impl Coordinator {
-    pub async fn new(cfg: CoordinatorConfig, exec_cfg: ExecutionConfig) -> Result<Self> {
-        let db_url = cfg.db_url.clone();
-        let db_config = cfg.database.clone();
-        let repo = Arc::new(Repositories::new(Some(db_url), Some(db_config)).await?);
+    pub async fn new(cfg: CoordinatorConfig, exec_cfg: ExecutionConfig, db_cfg: DatabaseConfig) -> Result<Self> {
+        let db_url = cfg.db_url.clone().unwrap_or_else(|| "configs/wattle.db".to_string());
+        let repo = Arc::new(Repositories::new(Some(db_url), Some(db_cfg)).await?);
         let executor = TaskExecutor::new(exec_cfg);
 
         let session = zenoh::open(zenoh::Config::default())
@@ -45,7 +44,7 @@ impl Coordinator {
 
     /// 从完整设置创建协调器
     pub async fn from_settings(settings: Settings) -> Result<Self> {
-        Self::new(settings.coordinator, settings.execution).await
+        Self::new(settings.coordinator, settings.execution, settings.database).await
     }
 
     /// 获取 PID 映射
