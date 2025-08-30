@@ -9,6 +9,11 @@ chrono = { workspace = true }
 petgraph = "0.6"
 eyre = { workspace = true }
 thiserror = "1.0"
+config = "0.14"
+axum = "0.8"
+sqlx = { version = "0.8", features = ["sqlite", "runtime-tokio-rustls", "migrate"] }
+async-trait = "0.1"
+tokio = { workspace = true }
 
 [dev-dependencies]
 serde_json = { workspace = true }

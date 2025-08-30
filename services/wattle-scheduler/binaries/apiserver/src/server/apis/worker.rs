@@ -213,7 +213,8 @@ async fn get_worker_logs(
             e
         })?;
 
-    logs.into_success_json()
+    let log_paths: Vec<String> = logs.into_iter().map(|log| log.file_path).collect();
+    log_paths.into_success_json()
 }
 
 /// 流式获取工作者日志
@@ -231,7 +232,8 @@ async fn stream_worker_logs(
             match state.coordinator.get_worker_logs(&workflow_name, &worker_name).await {
                 Ok(logs) => {
                     for log in logs {
-                        let event = Event::default().data(log);
+                        let log_data = serde_json::to_string(&log).unwrap_or_else(|_| log.file_path);
+                        let event = Event::default().data(log_data);
                         yield Ok(event);
                     }
                 }

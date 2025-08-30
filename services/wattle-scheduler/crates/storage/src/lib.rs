@@ -6,7 +6,7 @@ pub mod model;
 mod repositories;
 
 pub use model::{WorkerEntity, WorkflowEntity, WorkerLogEntity};
-pub use repositories::Repositories;
+pub use repositories::{Repositories, WorkflowRepository, WorkerRepository, LogRepository};
 pub type DB = sqlx::SqlitePool;
 
 pub async fn init_database(

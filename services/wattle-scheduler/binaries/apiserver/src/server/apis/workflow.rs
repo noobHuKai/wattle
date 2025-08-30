@@ -36,7 +36,7 @@ async fn list_workflows(
     
     let (workflows, total) = state
         .coordinator
-        .list_workflows_paged(page, page_size, status, sort_by, order)
+        .list_workflows_paged(page, page_size, status, Some(sort_by), Some(order))
         .await?;
 
     let workflow_responses: Vec<WorkflowResponse> = workflows

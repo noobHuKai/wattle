@@ -10,6 +10,7 @@ serde = { version = "1.0.219", features = ["derive"] }
 serde_json.workspace = true
 dotenv = "0.15.0"
 toml = "*"
+chrono = { version = "0.4.38", features = ["serde"] }
 
 # Logging and tracing
 tracing = "0.1.41"
@@ -30,6 +31,7 @@ eyre.workspace = true
 
 coordinator = {path = "../../crates/coordinator"}
 storage = {path = "../../crates/storage"}
+core = {path = "../../crates/core"}
 
 prometheus = "*"
 
@@ -37,7 +39,6 @@ prometheus = "*"
 tempfile = "3.0"
 tokio-test = "0.4"
 axum-test = "16"
-core = { path = "../../crates/core" }
 futures = "0.3"
 async-stream = "0.3"
 sysinfo = "*"
