@@ -11,4 +11,6 @@ zenoh.workspace = true
 
 
 [dev-dependencies]
-tokio.workspace = true
+tokio = { workspace = true }
+tempfile = "3.0"
+chrono = { workspace = true }

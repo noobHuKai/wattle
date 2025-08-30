@@ -10,3 +10,9 @@ chrono = { workspace = true}
 serde = { workspace = true}
 core ={ path = "../core"}
 serde_json = { workspace = true}
+
+[dev-dependencies]
+tempfile = "3.0"
+tokio-test = "0.4"
+tokio = { workspace = true }
+eyre = { workspace = true }

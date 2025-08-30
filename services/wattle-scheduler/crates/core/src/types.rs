@@ -19,7 +19,7 @@ pub struct Workflow {
     pub workers: Vec<Worker>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq, Hash)]
 pub enum WorkerStatus {
     #[default]
     Created,
