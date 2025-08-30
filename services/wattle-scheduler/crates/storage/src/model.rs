@@ -34,6 +34,8 @@ pub struct WorkerEntity {
     pub args: Option<String>, // JSON 字符串
     pub working_dir: Option<String>,
     pub env_vars: Option<String>, // JSON 字符串
+    pub inputs: Option<String>, // JSON 字符串
+    pub outputs: Option<String>, // JSON 字符串
     pub status: String,
     pub error_message: Option<String>,
     pub created_at: String,
@@ -56,6 +58,16 @@ impl Into<Worker> for WorkerEntity {
             working_dir: self.working_dir,
             env_vars: if let Some(env_str) = self.env_vars {
                 serde_json::from_str(&env_str).ok()
+            } else {
+                None
+            },
+            inputs: if let Some(inputs_str) = self.inputs {
+                serde_json::from_str(&inputs_str).ok()
+            } else {
+                None
+            },
+            outputs: if let Some(outputs_str) = self.outputs {
+                serde_json::from_str(&outputs_str).ok()
             } else {
                 None
             },
@@ -89,6 +101,18 @@ impl WorkerEntity {
             None
         };
 
+        let inputs = if let Some(inputs_str) = &self.inputs {
+            Some(serde_json::from_str(inputs_str)?)
+        } else {
+            None
+        };
+
+        let outputs = if let Some(outputs_str) = &self.outputs {
+            Some(serde_json::from_str(outputs_str)?)
+        } else {
+            None
+        };
+
         Ok(core::Worker {
             name: self.name.clone(),
             workflow_name: self.workflow_name.clone(),
@@ -96,6 +120,8 @@ impl WorkerEntity {
             args,
             working_dir: self.working_dir.clone(),
             env_vars,
+            inputs,
+            outputs,
         })
     }
 
@@ -152,6 +178,8 @@ impl From<&core::Worker> for WorkerEntity {
             args: worker.args.as_ref().map(|args| serde_json::to_string(args).unwrap_or_default()),
             working_dir: worker.working_dir.clone(),
             env_vars: worker.env_vars.as_ref().map(|env| serde_json::to_string(env).unwrap_or_default()),
+            inputs: worker.inputs.as_ref().map(|inputs| serde_json::to_string(inputs).unwrap_or_default()),
+            outputs: worker.outputs.as_ref().map(|outputs| serde_json::to_string(outputs).unwrap_or_default()),
             status: "created".to_string(),
             error_message: None,
             created_at: chrono::Utc::now().to_rfc3339(),

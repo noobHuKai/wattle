@@ -14,6 +14,8 @@ fn test_worker_creation() {
             map.insert("TEST_VAR".to_string(), "test_value".to_string());
             map
         }),
+        inputs: None,
+        outputs: None,
     };
 
     assert_eq!(worker.name, "test_worker");
@@ -33,6 +35,8 @@ fn test_workflow_creation() {
         args: None,
         working_dir: None,
         env_vars: None,
+        inputs: None,
+        outputs: None,
     };
 
     let workflow = Workflow {
@@ -85,6 +89,8 @@ fn test_serialization() {
         args: Some(vec!["world".to_string()]),
         working_dir: Some("/tmp".to_string()),
         env_vars: None,
+        inputs: None,
+        outputs: None,
     };
 
     // Test JSON serialization

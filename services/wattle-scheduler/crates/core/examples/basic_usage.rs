@@ -16,6 +16,8 @@ fn main() {
         args: Some(vec!["--port".to_string(), "3000".to_string()]),
         working_dir: Some("/app".to_string()),
         env_vars: Some(env_vars),
+        inputs: None,
+        outputs: None,
     };
 
     println!("Created web worker:");
@@ -33,6 +35,8 @@ fn main() {
         args: None,
         working_dir: Some("/app".to_string()),
         env_vars: None,
+        inputs: None,
+        outputs: None,
     };
 
     // Create a workflow with multiple workers

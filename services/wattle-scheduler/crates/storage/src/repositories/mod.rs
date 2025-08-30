@@ -132,8 +132,8 @@ impl Repositories {
         for worker in workers {
             let entity = WorkerEntity::from(worker);
             query(
-                "INSERT INTO workers (workflow_name, name, command, args, working_dir, env_vars, status, created_at) 
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+                "INSERT INTO workers (workflow_name, name, command, args, working_dir, env_vars, inputs, outputs, status, created_at) 
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)",
             )
             .bind(&entity.workflow_name)
             .bind(&entity.name)
@@ -141,6 +141,8 @@ impl Repositories {
             .bind(&entity.args)
             .bind(&entity.working_dir)
             .bind(&entity.env_vars)
+            .bind(&entity.inputs)
+            .bind(&entity.outputs)
             .bind(&entity.status)
             .bind(&entity.created_at)
             .execute(&self.db)
@@ -170,6 +172,8 @@ impl Repositories {
                 args: row.get("args"),
                 working_dir: row.get("working_dir"),
                 env_vars: row.get("env_vars"),
+                inputs: row.get("inputs"),
+                outputs: row.get("outputs"),
                 status: row.get("status"),
                 error_message: row.get("error_message"),
                 created_at: row.get("created_at"),

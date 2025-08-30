@@ -188,11 +188,19 @@ impl Coordinator {
 
     pub async fn create_workflow(&self, workflow: Workflow) -> Result<()> {
         tracing::info!("Creating workflow: {:?}", workflow);
+        
         // 判断 workflow name 是否存在
         if self.workflow_exists(&workflow.name).await? {
             tracing::warn!("Workflow already exists: {:?}", workflow);
             return Err(eyre::eyre!("Workflow already exists"));
         }
+        
+        // 验证依赖关系
+        if let Err(e) = workflow.validate_dependencies() {
+            tracing::error!("Workflow dependency validation failed: {:?}", e);
+            return Err(e);
+        }
+        
         self.repo.insert_workflow(&workflow).await?;
         for worker in &workflow.workers {
             if self.worker_exists(&worker.workflow_name, &worker.name).await? {
@@ -210,15 +218,66 @@ impl Coordinator {
             .get_workflow(workflow_name)
             .await?
             .ok_or_else(|| eyre::eyre!("Workflow not found"))?;
+        
         tracing::info!("Running workflow: {:?}", workflow);
-        for worker in workflow.workers {
-            let coordinator = self.clone();
-            tokio::spawn(async move {
-                if let Err(e) = coordinator.run_workers(worker).await {
-                    tracing::error!("Error occurred while running worker: {:?}", e);
+        
+        // 获取拓扑排序后的执行顺序
+        let execution_levels = workflow.get_execution_order()
+            .map_err(|e| eyre::eyre!("Failed to get execution order: {}", e))?;
+        
+        // 创建 worker 名称到 worker 对象的映射
+        let worker_map: HashMap<String, Worker> = workflow.workers
+            .into_iter()
+            .map(|w| (w.name.clone(), w))
+            .collect();
+        
+        // 按层级顺序执行，同一层级内并发执行
+        for (level_idx, level_workers) in execution_levels.into_iter().enumerate() {
+            tracing::info!("Starting execution level {}: {:?}", level_idx, level_workers);
+            
+            // 为当前层级的所有 worker 创建任务
+            let mut level_tasks = Vec::new();
+            
+            for worker_name in level_workers {
+                if let Some(worker) = worker_map.get(&worker_name) {
+                    let coordinator = self.clone();
+                    let worker = worker.clone();
+                    
+                    let task = tokio::spawn(async move {
+                        tracing::info!("Starting worker: {}", worker.name);
+                        if let Err(e) = coordinator.run_workers(worker).await {
+                            tracing::error!("Error occurred while running worker {}: {:?}", worker_name, e);
+                            return Err(e);
+                        }
+                        tracing::info!("Worker {} completed", worker_name);
+                        Ok(())
+                    });
+                    
+                    level_tasks.push(task);
                 }
-            });
+            }
+            
+            // 等待当前层级的所有 worker 完成
+            for task in level_tasks {
+                match task.await {
+                    Ok(Ok(())) => {
+                        // Worker 成功完成
+                    }
+                    Ok(Err(worker_err)) => {
+                        tracing::error!("Worker error: {:?}", worker_err);
+                        return Err(worker_err);
+                    }
+                    Err(join_err) => {
+                        tracing::error!("Task join error: {:?}", join_err);
+                        return Err(eyre::eyre!("Task join error: {}", join_err));
+                    }
+                }
+            }
+            
+            tracing::info!("Execution level {} completed", level_idx);
         }
+        
+        tracing::info!("Workflow {} completed successfully", workflow_name);
         Ok(())
     }
     pub async fn list_topic(&self, name: Option<String>) -> eyre::Result<Vec<String>> {

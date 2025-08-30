@@ -32,6 +32,8 @@ impl Into<Worker> for WorkerSpec {
             env_vars: self.env_vars,
             workflow_name: "".to_string(),
             command: self.cmd,
+            inputs: None,
+            outputs: None,
         }
     }
 }

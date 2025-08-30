@@ -47,6 +47,8 @@ fn test_workflow_creation_and_retrieval() {
             args: None,
             working_dir: None,
             env_vars: None,
+            inputs: None,
+            outputs: None,
         };
         
         let workflow = Workflow {
@@ -89,6 +91,8 @@ fn test_workflow_execution() {
             args: None,
             working_dir: Some(temp_dir.path().to_string_lossy().to_string()),
             env_vars: None,
+            inputs: None,
+            outputs: None,
         };
         
         let workflow = Workflow {

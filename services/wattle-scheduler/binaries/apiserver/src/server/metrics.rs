@@ -62,7 +62,7 @@ impl MetricsCollector {
     fn refresh_system(&mut self) {
         self.sys.refresh_cpu_all();
         self.sys.refresh_memory();
-        self.sys.refresh_processes(ProcessesToUpdate::All, true);
+        self.sys.refresh_processes(ProcessesToUpdate::All);
     }
 
     /// 收集系统整体指标
