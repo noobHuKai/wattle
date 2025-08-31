@@ -9,15 +9,49 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WorkflowsRouteImport } from './routes/workflows'
+import { Route as NodesRouteImport } from './routes/nodes'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as ControlFlowRouteImport } from './routes/control-flow'
+import { Route as ControlRouteImport } from './routes/_control'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AppWorkflowsRouteImport } from './routes/_app/workflows'
+import { Route as AppNodesRouteImport } from './routes/_app/nodes'
+import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppWorkflowIndexRouteImport } from './routes/_app/workflow/index'
 import { Route as AppTask_groupIndexRouteImport } from './routes/_app/task_group/index'
 import { Route as AppSimIndexRouteImport } from './routes/_app/sim/index'
 import { Route as AppDashboardIndexRouteImport } from './routes/_app/dashboard/index'
+import { Route as AppWorkflowsWorkflowIdRouteImport } from './routes/_app/workflows/$workflowId'
+import { Route as AppNodesNodeIdRouteImport } from './routes/_app/nodes/$nodeId'
 import { Route as AppTask_groupTaskGroupIdIndexRouteImport } from './routes/_app/task_group/$taskGroupId/index'
 import { Route as AppSimSimIdIndexRouteImport } from './routes/_app/sim/$simId/index'
 
+const WorkflowsRoute = WorkflowsRouteImport.update({
+  id: '/workflows',
+  path: '/workflows',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NodesRoute = NodesRouteImport.update({
+  id: '/nodes',
+  path: '/nodes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ControlFlowRoute = ControlFlowRouteImport.update({
+  id: '/control-flow',
+  path: '/control-flow',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ControlRoute = ControlRouteImport.update({
+  id: '/_control',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppRoute = AppRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
@@ -25,6 +59,21 @@ const AppRoute = AppRouteImport.update({
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppWorkflowsRoute = AppWorkflowsRouteImport.update({
+  id: '/workflows',
+  path: '/workflows',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNodesRoute = AppNodesRouteImport.update({
+  id: '/nodes',
+  path: '/nodes',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => AppRoute,
 } as any)
 const AppWorkflowIndexRoute = AppWorkflowIndexRouteImport.update({
@@ -43,9 +92,19 @@ const AppSimIndexRoute = AppSimIndexRouteImport.update({
   getParentRoute: () => AppRoute,
 } as any)
 const AppDashboardIndexRoute = AppDashboardIndexRouteImport.update({
-  id: '/dashboard/',
-  path: '/dashboard/',
-  getParentRoute: () => AppRoute,
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppDashboardRoute,
+} as any)
+const AppWorkflowsWorkflowIdRoute = AppWorkflowsWorkflowIdRouteImport.update({
+  id: '/$workflowId',
+  path: '/$workflowId',
+  getParentRoute: () => AppWorkflowsRoute,
+} as any)
+const AppNodesNodeIdRoute = AppNodesNodeIdRouteImport.update({
+  id: '/$nodeId',
+  path: '/$nodeId',
+  getParentRoute: () => AppNodesRoute,
 } as any)
 const AppTask_groupTaskGroupIdIndexRoute =
   AppTask_groupTaskGroupIdIndexRouteImport.update({
@@ -60,8 +119,14 @@ const AppSimSimIdIndexRoute = AppSimSimIdIndexRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/control-flow': typeof ControlFlowRoute
+  '/dashboard': typeof AppDashboardRouteWithChildren
+  '/nodes': typeof AppNodesRouteWithChildren
+  '/workflows': typeof AppWorkflowsRouteWithChildren
   '/': typeof AppIndexRoute
-  '/dashboard': typeof AppDashboardIndexRoute
+  '/nodes/$nodeId': typeof AppNodesNodeIdRoute
+  '/workflows/$workflowId': typeof AppWorkflowsWorkflowIdRoute
+  '/dashboard/': typeof AppDashboardIndexRoute
   '/sim': typeof AppSimIndexRoute
   '/task_group': typeof AppTask_groupIndexRoute
   '/workflow': typeof AppWorkflowIndexRoute
@@ -69,8 +134,13 @@ export interface FileRoutesByFullPath {
   '/task_group/$taskGroupId': typeof AppTask_groupTaskGroupIdIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof AppIndexRoute
+  '/control-flow': typeof ControlFlowRoute
   '/dashboard': typeof AppDashboardIndexRoute
+  '/nodes': typeof AppNodesRouteWithChildren
+  '/workflows': typeof AppWorkflowsRouteWithChildren
+  '/': typeof AppIndexRoute
+  '/nodes/$nodeId': typeof AppNodesNodeIdRoute
+  '/workflows/$workflowId': typeof AppWorkflowsWorkflowIdRoute
   '/sim': typeof AppSimIndexRoute
   '/task_group': typeof AppTask_groupIndexRoute
   '/workflow': typeof AppWorkflowIndexRoute
@@ -80,7 +150,17 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
+  '/_control': typeof ControlRoute
+  '/control-flow': typeof ControlFlowRoute
+  '/dashboard': typeof DashboardRoute
+  '/nodes': typeof NodesRoute
+  '/workflows': typeof WorkflowsRoute
+  '/_app/dashboard': typeof AppDashboardRouteWithChildren
+  '/_app/nodes': typeof AppNodesRouteWithChildren
+  '/_app/workflows': typeof AppWorkflowsRouteWithChildren
   '/_app/': typeof AppIndexRoute
+  '/_app/nodes/$nodeId': typeof AppNodesNodeIdRoute
+  '/_app/workflows/$workflowId': typeof AppWorkflowsWorkflowIdRoute
   '/_app/dashboard/': typeof AppDashboardIndexRoute
   '/_app/sim/': typeof AppSimIndexRoute
   '/_app/task_group/': typeof AppTask_groupIndexRoute
@@ -91,8 +171,14 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
+    | '/control-flow'
     | '/dashboard'
+    | '/nodes'
+    | '/workflows'
+    | '/'
+    | '/nodes/$nodeId'
+    | '/workflows/$workflowId'
+    | '/dashboard/'
     | '/sim'
     | '/task_group'
     | '/workflow'
@@ -100,8 +186,13 @@ export interface FileRouteTypes {
     | '/task_group/$taskGroupId'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
+    | '/control-flow'
     | '/dashboard'
+    | '/nodes'
+    | '/workflows'
+    | '/'
+    | '/nodes/$nodeId'
+    | '/workflows/$workflowId'
     | '/sim'
     | '/task_group'
     | '/workflow'
@@ -110,7 +201,17 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_app'
+    | '/_control'
+    | '/control-flow'
+    | '/dashboard'
+    | '/nodes'
+    | '/workflows'
+    | '/_app/dashboard'
+    | '/_app/nodes'
+    | '/_app/workflows'
     | '/_app/'
+    | '/_app/nodes/$nodeId'
+    | '/_app/workflows/$workflowId'
     | '/_app/dashboard/'
     | '/_app/sim/'
     | '/_app/task_group/'
@@ -121,10 +222,50 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
+  ControlRoute: typeof ControlRoute
+  ControlFlowRoute: typeof ControlFlowRoute
+  DashboardRoute: typeof DashboardRoute
+  NodesRoute: typeof NodesRoute
+  WorkflowsRoute: typeof WorkflowsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/workflows': {
+      id: '/workflows'
+      path: '/workflows'
+      fullPath: '/workflows'
+      preLoaderRoute: typeof WorkflowsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/nodes': {
+      id: '/nodes'
+      path: '/nodes'
+      fullPath: '/nodes'
+      preLoaderRoute: typeof NodesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/control-flow': {
+      id: '/control-flow'
+      path: '/control-flow'
+      fullPath: '/control-flow'
+      preLoaderRoute: typeof ControlFlowRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_control': {
+      id: '/_control'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof ControlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app': {
       id: '/_app'
       path: ''
@@ -137,6 +278,27 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/workflows': {
+      id: '/_app/workflows'
+      path: '/workflows'
+      fullPath: '/workflows'
+      preLoaderRoute: typeof AppWorkflowsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/nodes': {
+      id: '/_app/nodes'
+      path: '/nodes'
+      fullPath: '/nodes'
+      preLoaderRoute: typeof AppNodesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/dashboard': {
+      id: '/_app/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/workflow/': {
@@ -162,10 +324,24 @@ declare module '@tanstack/react-router' {
     }
     '/_app/dashboard/': {
       id: '/_app/dashboard/'
-      path: '/dashboard'
-      fullPath: '/dashboard'
+      path: '/'
+      fullPath: '/dashboard/'
       preLoaderRoute: typeof AppDashboardIndexRouteImport
-      parentRoute: typeof AppRoute
+      parentRoute: typeof AppDashboardRoute
+    }
+    '/_app/workflows/$workflowId': {
+      id: '/_app/workflows/$workflowId'
+      path: '/$workflowId'
+      fullPath: '/workflows/$workflowId'
+      preLoaderRoute: typeof AppWorkflowsWorkflowIdRouteImport
+      parentRoute: typeof AppWorkflowsRoute
+    }
+    '/_app/nodes/$nodeId': {
+      id: '/_app/nodes/$nodeId'
+      path: '/$nodeId'
+      fullPath: '/nodes/$nodeId'
+      preLoaderRoute: typeof AppNodesNodeIdRouteImport
+      parentRoute: typeof AppNodesRoute
     }
     '/_app/task_group/$taskGroupId/': {
       id: '/_app/task_group/$taskGroupId/'
@@ -184,9 +360,47 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AppRouteChildren {
-  AppIndexRoute: typeof AppIndexRoute
+interface AppDashboardRouteChildren {
   AppDashboardIndexRoute: typeof AppDashboardIndexRoute
+}
+
+const AppDashboardRouteChildren: AppDashboardRouteChildren = {
+  AppDashboardIndexRoute: AppDashboardIndexRoute,
+}
+
+const AppDashboardRouteWithChildren = AppDashboardRoute._addFileChildren(
+  AppDashboardRouteChildren,
+)
+
+interface AppNodesRouteChildren {
+  AppNodesNodeIdRoute: typeof AppNodesNodeIdRoute
+}
+
+const AppNodesRouteChildren: AppNodesRouteChildren = {
+  AppNodesNodeIdRoute: AppNodesNodeIdRoute,
+}
+
+const AppNodesRouteWithChildren = AppNodesRoute._addFileChildren(
+  AppNodesRouteChildren,
+)
+
+interface AppWorkflowsRouteChildren {
+  AppWorkflowsWorkflowIdRoute: typeof AppWorkflowsWorkflowIdRoute
+}
+
+const AppWorkflowsRouteChildren: AppWorkflowsRouteChildren = {
+  AppWorkflowsWorkflowIdRoute: AppWorkflowsWorkflowIdRoute,
+}
+
+const AppWorkflowsRouteWithChildren = AppWorkflowsRoute._addFileChildren(
+  AppWorkflowsRouteChildren,
+)
+
+interface AppRouteChildren {
+  AppDashboardRoute: typeof AppDashboardRouteWithChildren
+  AppNodesRoute: typeof AppNodesRouteWithChildren
+  AppWorkflowsRoute: typeof AppWorkflowsRouteWithChildren
+  AppIndexRoute: typeof AppIndexRoute
   AppSimIndexRoute: typeof AppSimIndexRoute
   AppTask_groupIndexRoute: typeof AppTask_groupIndexRoute
   AppWorkflowIndexRoute: typeof AppWorkflowIndexRoute
@@ -195,8 +409,10 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppDashboardRoute: AppDashboardRouteWithChildren,
+  AppNodesRoute: AppNodesRouteWithChildren,
+  AppWorkflowsRoute: AppWorkflowsRouteWithChildren,
   AppIndexRoute: AppIndexRoute,
-  AppDashboardIndexRoute: AppDashboardIndexRoute,
   AppSimIndexRoute: AppSimIndexRoute,
   AppTask_groupIndexRoute: AppTask_groupIndexRoute,
   AppWorkflowIndexRoute: AppWorkflowIndexRoute,
@@ -208,6 +424,11 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
+  ControlRoute: ControlRoute,
+  ControlFlowRoute: ControlFlowRoute,
+  DashboardRoute: DashboardRoute,
+  NodesRoute: NodesRoute,
+  WorkflowsRoute: WorkflowsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
