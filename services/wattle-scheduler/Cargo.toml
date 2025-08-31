@@ -8,6 +8,7 @@ members = [
     "crates/storage",
     "apis/rust",
     "apis/cxx",
+    "apis/python",
 ]
 resolver = "2"
 

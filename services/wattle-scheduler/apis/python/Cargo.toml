@@ -16,7 +16,7 @@ tokio = { version = "1", features = ["full"] }
 serde_json = "1.0"
 uuid = { version = "1.0", features = ["v4"] }
 zenoh = "1.5"
-arrow-array = "40.0"
+arrow-array = "56.1.0"
 arrow-schema = "40.0"
-arrow-json = "40.0"
+arrow-json = "56.1.0"
 futures = "0.3"
