@@ -122,8 +122,8 @@ impl TaskExecutor {
         let mut env_vars = std::env::vars().collect::<HashMap<String, String>>();
 
         // 添加工作者特定的环境变量
-        env_vars.insert("WORKER_NAME".to_string(), worker.name.clone());
-        env_vars.insert("WORKFLOW_NAME".to_string(), worker.workflow_name.clone());
+        env_vars.insert("WATTLE_WORKER_NAME".to_string(), worker.name.clone());
+        env_vars.insert("WATTLE_WORKFLOW_NAME".to_string(), worker.workflow_name.clone());
 
         // 添加用户定义的环境变量
         if let Some(user_env) = &worker.env_vars {

@@ -5,9 +5,6 @@ edition = "2021"
 description = "Wattle C++ SDK using cxx bindings"
 license = "MIT"
 
-# Add empty workspace table to avoid inheriting parent workspace configuration
-[workspace]
-
 [lib]
 crate-type = ["cdylib", "staticlib"]
 

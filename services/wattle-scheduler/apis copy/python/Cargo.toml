@@ -3,9 +3,6 @@ name = "wattle-py"
 version = "0.1.0"
 edition = "2021"
 
-# Add empty workspace table to avoid inheriting parent workspace configuration
-[workspace]
-
 [lib]
 name = "wattle_py"
 crate-type = ["cdylib"]
